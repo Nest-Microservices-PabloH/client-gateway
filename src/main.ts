@@ -25,6 +25,5 @@ async function bootstrap() {
 
   logger.log(`Gateway is running on port ${envs.PORT}`);
 
-
 }
 bootstrap();

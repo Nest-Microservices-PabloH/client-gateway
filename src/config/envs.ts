@@ -5,8 +5,12 @@ import { z } from 'zod';
 const envSchema = z.object({
     // NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
     PORT: z.coerce.number().int().positive(),
+
     PRODUCTS_MICROSERVICES_HOST: z.string(),
     PRODUCTS_MICROSERVICES_PORT: z.coerce.number().int().positive(),
+
+    ORDERS_MICROSERVICES_HOST: z.string(),
+    ORDERS_MICROSERVICES_PORT: z.coerce.number().int().positive(),
 })
 
 // Luego haces el parsing:
@@ -19,6 +23,10 @@ if (!success) {
 
 export const envs = {
     PORT: data.PORT,
+
     PRODUCTS_MICROSERVICES_HOST: data.PRODUCTS_MICROSERVICES_HOST,
     PRODUCTS_MICROSERVICES_PORT: data.PRODUCTS_MICROSERVICES_PORT,
+
+    ORDERS_MICROSERVICES_HOST: data.ORDERS_MICROSERVICES_HOST,
+    ORDERS_MICROSERVICES_PORT: data.ORDERS_MICROSERVICES_PORT,
 }
