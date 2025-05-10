@@ -3,7 +3,7 @@ import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs';
 
 import { PaginationDto } from '../common';
-import { ORDERS_SERVICE } from '../config';
+import { NATS_SERVICE } from '../config';
 
 import { CreateOrderDto, OrderPaginationDto, OrderStatusDto } from './dto';
 
@@ -11,13 +11,13 @@ import { CreateOrderDto, OrderPaginationDto, OrderStatusDto } from './dto';
 @Controller('orders')
 export class OrdersController {
   constructor(
-    @Inject(ORDERS_SERVICE)
-    private readonly ordersClient: ClientProxy
+    @Inject(NATS_SERVICE)
+    private readonly client: ClientProxy
   ) { }
 
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersClient.send({ cmd: 'createOrder' }, createOrderDto)
+    return this.client.send({ cmd: 'createOrder' }, createOrderDto)
       .pipe(
         catchError(error => {
           throw new RpcException(error);
@@ -29,7 +29,7 @@ export class OrdersController {
   findAll(
     @Query() orderPaginationDto: OrderPaginationDto
   ) {
-    return this.ordersClient.send({ cmd: 'findAllOrders' }, orderPaginationDto)
+    return this.client.send({ cmd: 'findAllOrders' }, orderPaginationDto)
       .pipe(
         catchError(error => {
           throw new RpcException(error);
@@ -39,7 +39,7 @@ export class OrdersController {
 
   @Get('id/:id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.ordersClient.send({ cmd: 'findOneOrder' }, { id })
+    return this.client.send({ cmd: 'findOneOrder' }, { id })
       .pipe(
         catchError(error => {
           throw new RpcException(error);
@@ -52,7 +52,7 @@ export class OrdersController {
     @Param() statusDto: OrderStatusDto,
     @Query() paginationDto: PaginationDto
   ) {
-    return this.ordersClient.send({ cmd: 'findAllOrders' }, {
+    return this.client.send({ cmd: 'findAllOrders' }, {
       ...paginationDto,
       status: statusDto.status
     }).pipe(
@@ -67,7 +67,7 @@ export class OrdersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() statusDto: OrderStatusDto
   ) {
-    return this.ordersClient.send({ cmd: 'changeOrderStatus' }, {
+    return this.client.send({ cmd: 'changeOrderStatus' }, {
       id,
       status: statusDto.status
     }).pipe(
