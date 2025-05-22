@@ -1,10 +1,13 @@
-import { Controller, Get, Post, Inject, Body } from '@nestjs/common';
+import { Controller, Get, Post, Inject, Body, UseGuards } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs';
 
 import { NATS_SERVICE } from '../config';
 
+import { CurrentUser } from './interfaces/current-user.interface';
 import { RegisterUserDto, LoginUserDto } from './dto';
+import { AuthGuard } from './guards/auth.guard';
+import { User, Token } from './decorators';
 
 @Controller('auth')
 export class AuthController {
@@ -37,14 +40,16 @@ export class AuthController {
       );
   }
 
+  @UseGuards(AuthGuard)
   @Get('verify')
-  verifyToken() {
-    return this.client.send({ cmd: 'auth.verify.user' }, {})
-      .pipe(
-        catchError(error => {
-          throw new RpcException(error);
-        })
-      );
+  verifyToken(@User() user: CurrentUser, @Token() token: string) {
+    return { user, token };
+    // return this.client.send({ cmd: 'auth.verify.user' }, {})
+    //   .pipe(
+    //     catchError(error => {
+    //       throw new RpcException(error);
+    //     })
+    //   );
   }
 
 }
