@@ -2,7 +2,7 @@ import { ArgumentsHost, Catch, ExceptionFilter } from "@nestjs/common";
 import { RpcException } from "@nestjs/microservices";
 
 interface RpcErrorResponse {
-    statusCode: number;
+    status: number;
     message: string;
     [key: string]: any;
 }
@@ -13,13 +13,12 @@ export class RpcExceptionFilter implements ExceptionFilter {
         return (
             typeof error === 'object' &&
             error !== null &&
-            'statusCode' in error &&
-            'message' in error
+            'status' in error
         );
     }
 
-    private getStatusCode(statusCode: any): number {
-        const parsedCode = Number(statusCode);
+    private getStatusCode(status: any): number {
+        const parsedCode = Number(status);
         return isNaN(parsedCode) ? 400 : parsedCode;
     }
 
@@ -28,22 +27,30 @@ export class RpcExceptionFilter implements ExceptionFilter {
         const response = ctx.getResponse();
         const rpcError = exception.getError();
 
-        if (rpcError.toString().includes('Empty response')) {
+        if (rpcError?.toString?.().includes('Empty response')) {
             return response.status(500).json({
-                statusCode: 500,
-                message: rpcError.toString().substring(0, rpcError.toString().indexOf('(') - 1)
-            })
+                status: 500,
+                message: 'Empty response from microservice',
+            });
         }
 
         if (this.isRpcErrorResponse(rpcError)) {
-            const statusCode = this.getStatusCode(rpcError.statusCode);
-            return response.status(statusCode).json(rpcError);
+            const status = this.getStatusCode(rpcError.status);
+            const message = typeof rpcError.message === 'string'
+                ? rpcError.message
+                : 'An unexpected error occurred';
+
+            return response.status(status).json({
+                status,
+                message,
+            });
         }
 
-        response.status(400).json({
-            statusCode: 400,
-            message: rpcError
+        return response.status(400).json({
+            status: 400,
+            message: typeof rpcError === 'string' ? rpcError : 'Unexpected error',
         });
     }
+
 }
 
